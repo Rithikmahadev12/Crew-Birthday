@@ -3,9 +3,45 @@ import { reducedMotion } from './util.js';
 /**
  * Embers: slow warm sparks drifting up behind the page, plus a burst() for big moments.
  * Pauses when the tab is hidden. Does nothing for people who prefer reduced motion.
+ * Birthday.mp3 starts on first user interaction (browser autoplay policy).
  */
+
+let _audio = null;
+
+export function startMusic() {
+  if (_audio) return;
+  _audio = new Audio('assets/Birthday.mp3');
+  _audio.loop = true;
+  _audio.volume = 0.45;
+
+  // Browsers block autoplay until a user gesture — we hook the first touch/click
+  const unlock = () => {
+    _audio.play().catch(() => {});
+    window.removeEventListener('click', unlock);
+    window.removeEventListener('touchstart', unlock);
+    window.removeEventListener('keydown', unlock);
+  };
+
+  window.addEventListener('click', unlock);
+  window.addEventListener('touchstart', unlock);
+  window.addEventListener('keydown', unlock);
+}
+
+export function stopMusic() {
+  if (!_audio) return;
+  _audio.pause();
+  _audio.currentTime = 0;
+}
+
+export function setMusicVolume(v) {
+  if (_audio) _audio.volume = Math.max(0, Math.min(1, v));
+}
+
 export function startAmbient(canvas) {
   if (reducedMotion()) return { burst() {}, stop() {} };
+
+  // Kick off the music alongside the ambient visuals
+  startMusic();
 
   const ctx = canvas.getContext('2d');
   let w = 0, h = 0, dpr = 1;
@@ -72,8 +108,14 @@ export function startAmbient(canvas) {
   }
 
   function visibility() {
-    if (document.hidden) cancelAnimationFrame(raf);
-    else { last = performance.now(); raf = requestAnimationFrame(frame); }
+    if (document.hidden) {
+      cancelAnimationFrame(raf);
+      if (_audio) _audio.pause();
+    } else {
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+      if (_audio) _audio.play().catch(() => {});
+    }
   }
 
   window.addEventListener('resize', resize);
@@ -87,6 +129,7 @@ export function startAmbient(canvas) {
     },
     stop() {
       cancelAnimationFrame(raf);
+      stopMusic();
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', visibility);
     },
