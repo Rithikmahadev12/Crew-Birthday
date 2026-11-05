@@ -38,7 +38,6 @@ async function boot() {
     s2.classList.add('hidden');
     s1.classList.remove('hidden');
     s1.removeAttribute('aria-hidden');
-    // reset player view back to candle stage
     candleStage.style.display = '';
     screenEl.style.display = 'none';
     audioPlayerEl.style.display = 'none';
@@ -112,7 +111,8 @@ async function boot() {
       const item = document.createElement('div');
       item.className = 'q-item';
       item.dataset.index = idx;
-      const typeIcon = reel.type === 'audio'
+      const isAudioType = reel.type === 'audio' || reel.type === 'video-as-audio';
+      const typeIcon = isAudioType
         ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l12-2v12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>`
         : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 4.5v15l14-7.5-14-7.5z" fill="currentColor"/></svg>`;
       item.innerHTML = `
@@ -130,7 +130,15 @@ async function boot() {
     queueEl.appendChild(group);
   }
 
-  // ── Video player wiring ───────────────────────────────────────────────────
+  // ── Hidden video element for video-as-audio ───────────────────────────────
+  const hiddenVideo = document.createElement('video');
+  hiddenVideo.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;';
+  hiddenVideo.muted = false;
+  hiddenVideo.playsInline = true;
+  hiddenVideo.preload = 'metadata';
+  document.body.appendChild(hiddenVideo);
+
+  // ── Video player wiring (for "last" crew / pure video type) ───────────────
   const videoEl = $('#video-main');
   const bigPlay = $('#big-play');
   const ctlPlay = $('#ctl-play');
@@ -168,8 +176,11 @@ async function boot() {
     else screenEl.requestFullscreen?.();
   });
 
-  // ── Audio player wiring ───────────────────────────────────────────────────
-  const audioEl = new Audio();
+  // ── Shared audio player state ─────────────────────────────────────────────
+  // activeAudioEl points to either the Audio() object (for pure audio)
+  // or the hiddenVideo element (for video-as-audio)
+  let activeAudioEl = null;
+
   const aCtlPlay = $('#a-ctl-play');
   const aCtlMute = $('#a-ctl-mute');
   const aScrub = $('#a-scrub');
@@ -180,7 +191,10 @@ async function boot() {
   let audioPlaying = false;
   let audioMuted = false;
 
-  // Waveform canvas animation
+  // Pure audio element (for type === 'audio')
+  const pureAudioEl = new Audio();
+
+  // ── Waveform canvas ───────────────────────────────────────────────────────
   const waveCanvas = $('#wave-canvas');
   const waveCtx = waveCanvas.getContext('2d');
   let waveRaf;
@@ -220,15 +234,17 @@ async function boot() {
   }
   window.addEventListener('resize', resizeWave);
 
+  // ── Audio card play/pause (works for both pure audio + video-as-audio) ────
   function toggleAudioPlay() {
+    if (!activeAudioEl) return;
     if (audioPlaying) {
-      audioEl.pause();
+      activeAudioEl.pause();
       audioPlaying = false;
       audioPlayerEl.dataset.state = 'paused';
       cancelAnimationFrame(waveRaf);
       drawWave(false);
     } else {
-      audioEl.play().then(() => {
+      activeAudioEl.play().then(() => {
         audioPlaying = true;
         audioPlayerEl.dataset.state = 'playing';
         markWatched(currentIndex);
@@ -237,27 +253,43 @@ async function boot() {
     }
   }
 
-  aCtlPlay.addEventListener('click', toggleAudioPlay);
-  aCtlMute.addEventListener('click', () => {
-    audioMuted = !audioMuted;
-    audioEl.muted = audioMuted;
-    audioPlayerEl.toggleAttribute('data-muted', audioMuted);
-  });
-  audioEl.addEventListener('timeupdate', () => {
-    if (!audioEl.duration) return;
-    aScrub.value = (audioEl.currentTime / audioEl.duration) * 1000;
-    aTimeCur.textContent = fmtTime(audioEl.currentTime);
-  });
-  audioEl.addEventListener('loadedmetadata', () => { aTimeDur.textContent = fmtTime(audioEl.duration); });
-  audioEl.addEventListener('ended', () => {
+  function syncAudioProgress() {
+    if (!activeAudioEl || !activeAudioEl.duration) return;
+    aScrub.value = (activeAudioEl.currentTime / activeAudioEl.duration) * 1000;
+    aTimeCur.textContent = fmtTime(activeAudioEl.currentTime);
+  }
+
+  function onAudioLoaded() {
+    aTimeDur.textContent = fmtTime(activeAudioEl.duration);
+  }
+
+  function onAudioEnded() {
     audioPlaying = false;
     audioPlayerEl.dataset.state = 'paused';
     cancelAnimationFrame(waveRaf);
     drawWave(false);
+  }
+
+  // Wire shared controls to whatever activeAudioEl is at time of event
+  aCtlPlay.addEventListener('click', toggleAudioPlay);
+  aCtlMute.addEventListener('click', () => {
+    audioMuted = !audioMuted;
+    if (activeAudioEl) activeAudioEl.muted = audioMuted;
+    audioPlayerEl.toggleAttribute('data-muted', audioMuted);
   });
   aScrub.addEventListener('input', () => {
-    if (audioEl.duration) audioEl.currentTime = (aScrub.value / 1000) * audioEl.duration;
+    if (activeAudioEl && activeAudioEl.duration)
+      activeAudioEl.currentTime = (aScrub.value / 1000) * activeAudioEl.duration;
   });
+
+  // Forward events from both audio sources through shared handlers
+  function attachAudioEvents(el) {
+    el.addEventListener('timeupdate', syncAudioProgress);
+    el.addEventListener('loadedmetadata', onAudioLoaded);
+    el.addEventListener('ended', onAudioEnded);
+  }
+  attachAudioEvents(pureAudioEl);
+  attachAudioEvents(hiddenVideo);
 
   // ── Select reel ───────────────────────────────────────────────────────────
   function selectReel(idx) {
@@ -266,25 +298,25 @@ async function boot() {
     const reel = cfg.reels[idx];
     const g = cfg.groups.find(gr => gr.id === reel.group);
 
-    // Update queue active state
     document.querySelectorAll('.q-item').forEach(el => {
       el.classList.toggle('active', Number(el.dataset.index) === idx);
     });
-    // Update candle active state
     document.querySelectorAll('.candle-btn').forEach(el => {
       el.classList.toggle('active', Number(el.dataset.index) === idx);
     });
 
-    // Hide candle stage, show correct player
     candleStage.style.display = 'none';
 
     if (reel.type === 'audio') {
+      // ── Pure audio card ──────────────────────────────────────────────────
       screenEl.style.display = 'none';
       audioPlayerEl.style.display = 'flex';
       audioName.textContent = reel.name;
       audioGroup.textContent = g ? g.label : '';
-      audioEl.src = reel.sources[0];
-      audioEl.load();
+
+      activeAudioEl = pureAudioEl;
+      pureAudioEl.src = reel.sources[0];
+      pureAudioEl.load();
       audioPlaying = false;
       audioPlayerEl.dataset.state = 'paused';
       aScrub.value = 0;
@@ -292,7 +324,27 @@ async function boot() {
       aTimeDur.textContent = '0:00';
       setTimeout(resizeWave, 50);
       drawWave(false);
+
+    } else if (reel.type === 'video-as-audio') {
+      // ── Video playing hidden, audio card shown on top ────────────────────
+      screenEl.style.display = 'none';
+      audioPlayerEl.style.display = 'flex';
+      audioName.textContent = reel.name;
+      audioGroup.textContent = g ? g.label : '';
+
+      activeAudioEl = hiddenVideo;
+      hiddenVideo.src = reel.sources[0];
+      hiddenVideo.load();
+      audioPlaying = false;
+      audioPlayerEl.dataset.state = 'paused';
+      aScrub.value = 0;
+      aTimeCur.textContent = '0:00';
+      aTimeDur.textContent = '0:00';
+      setTimeout(resizeWave, 50);
+      drawWave(false);
+
     } else {
+      // ── Normal video player ──────────────────────────────────────────────
       audioPlayerEl.style.display = 'none';
       screenEl.style.display = 'block';
       reelName.textContent = reel.name;
@@ -311,11 +363,16 @@ async function boot() {
   }
 
   function pauseAll() {
+    // Pause video player
     videoEl.pause();
     screenEl.dataset.state = 'paused';
-    audioEl.pause();
+    // Pause hidden video
+    hiddenVideo.pause();
+    // Pause pure audio
+    pureAudioEl.pause();
     audioPlaying = false;
     cancelAnimationFrame(waveRaf);
+    activeAudioEl = null;
   }
 
   // ── Mark watched ──────────────────────────────────────────────────────────
@@ -323,14 +380,11 @@ async function boot() {
     if (watched.has(idx)) return;
     watched.add(idx);
 
-    // Light candle in row
     const btn = document.querySelector(`.candle-btn[data-index="${idx}"]`);
     if (btn) btn.classList.add('lit');
 
-    // Light dot in sidebar
     if (candleDots[idx]) candleDots[idx].classList.add('lit');
 
-    // Unlock queue item
     const lock = document.querySelector(`.q-item__lock[data-index="${idx}"]`);
     if (lock) {
       lock.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#f5b944" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -353,7 +407,7 @@ async function boot() {
       e.preventDefault();
       if (currentIndex < 0) return;
       const reel = cfg.reels[currentIndex];
-      if (reel.type === 'audio') toggleAudioPlay();
+      if (reel.type === 'audio' || reel.type === 'video-as-audio') toggleAudioPlay();
       else toggleVideoPlay();
     }
     if (e.key === 'ArrowRight' && currentIndex >= 0) selectReel(Math.min(currentIndex + 1, total - 1));

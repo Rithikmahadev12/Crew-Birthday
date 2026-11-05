@@ -11,7 +11,7 @@
       "name": "Crew Member 1",
       "group": "current",
       "note": "",
-      "type": "video",
+      "type": "video-as-audio",
       "sources": ["videos/IMG_2448.mp4"]
     },
     {
@@ -25,7 +25,7 @@
       "name": "Crew Member 3",
       "group": "current",
       "note": "",
-      "type": "video",
+      "type": "video-as-audio",
       "sources": ["videos/VID_20261104_193157.mp4"]
     },
     {
@@ -41,6 +41,13 @@
       "note": "",
       "type": "audio",
       "sources": ["assets/Birthday.mp3"]
+    },
+    {
+      "name": "Crew Member 6",
+      "group": "current",
+      "note": "",
+      "type": "audio",
+      "sources": ["assets/crewmember_1.mp3"]
     }
   ]
 }
