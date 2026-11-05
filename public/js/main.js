@@ -1,4 +1,3 @@
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 const $ = (s) => document.querySelector(s);
 const fmtTime = (s) => {
   if (!isFinite(s)) return '0:00';
@@ -6,7 +5,6 @@ const fmtTime = (s) => {
   return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 };
 
-// ─── Boot ─────────────────────────────────────────────────────────────────────
 async function boot() {
   const res = await fetch('data/crew.json');
   const cfg = await res.json();
@@ -21,11 +19,11 @@ async function boot() {
   const candleStage = $('#candle-stage');
   const screenEl = $('#screen');
   const audioPlayerEl = $('#audio-player');
+  const videoNextBtn = $('#video-next-btn');
+  const audioNextBtn = $('#audio-next-btn');
 
   statusEl.textContent = `0 of ${total} lit`;
 
-  // ── Screen 1 → 2 transition ───────────────────────────────────────────────
-  // NOTE: NO { once: true } — must work every time back is pressed
   enterBtn.addEventListener('click', () => {
     s1.classList.add('hidden');
     s2.classList.remove('hidden');
@@ -39,86 +37,90 @@ async function boot() {
     s2.classList.add('hidden');
     s1.classList.remove('hidden');
     s1.removeAttribute('aria-hidden');
-    // Full reset of player area
+    showCandleStage();
+  });
+
+  function showCandleStage() {
     candleStage.style.display = '';
     screenEl.style.display = 'none';
     audioPlayerEl.style.display = 'none';
-    nextBtn.style.display = 'none';
+    videoNextBtn.style.display = 'none';
+    audioNextBtn.style.display = 'none';
     currentIndex = -1;
     activeCandle = -1;
-  });
+    document.querySelectorAll('.candle-btn').forEach(el => {
+      el.classList.remove('active', 'locked');
+    });
+    document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
+  }
 
-  // ── Candle row ────────────────────────────────────────────────────────────
-  const candleRow = $('#candle-row');
+  const candleGroupsEl = $('#candle-groups');
   const candleDots = [];
   const watched = new Set();
   let currentIndex = -1;
-  let activeCandle = -1; // which candle is currently unlocked and playing
+  let activeCandle = -1;
 
-  cfg.reels.forEach((reel, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'candle-btn';
-    btn.setAttribute('aria-label', `Unlock reel ${idx + 1}`);
-    btn.dataset.index = idx;
-    btn.innerHTML = `
-      <div class="candle-wrap">
-        <svg class="candle-svg" viewBox="0 0 48 150" aria-hidden="true">
-          <defs>
-            <radialGradient id="glow${idx}" cx="50%" cy="50%" r="50%">
-              <stop offset="0" stop-color="#f5b944" stop-opacity=".6"/>
-              <stop offset="1" stop-color="#f5b944" stop-opacity="0"/>
-            </radialGradient>
-            <linearGradient id="fl${idx}" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0" stop-color="#f07030"/>
-              <stop offset="1" stop-color="#f5b944"/>
-            </linearGradient>
-          </defs>
-          <circle class="c-glow" cx="24" cy="26" r="34" fill="url(#glow${idx})"/>
-          <g class="c-flame">
-            <path d="M24 5C31.5 17 34 27 24 40 14 27 16.5 17 24 5Z" fill="url(#fl${idx})"/>
-            <path d="M24 22C27.8 28 27.8 33.5 24 39 20.2 33.5 20.2 28 24 22Z" fill="#fff4c9"/>
-          </g>
-          <line x1="24" y1="40" x2="24" y2="49" stroke="#3a2a28" stroke-width="2" stroke-linecap="round"/>
-          <rect x="14" y="48" width="20" height="100" rx="2" fill="#f4eadc"/>
-          <g stroke="#8a2442" stroke-width="6">
-            <path d="M8 76 40 60M8 104 40 88M8 132 40 116"/>
-          </g>
-        </svg>
-        <span class="candle-num">${String(idx + 1).padStart(2, '0')}</span>
-      </div>`;
-    btn.addEventListener('click', () => {
-      // Only allow clicking if no candle is currently active,
-      // OR if this is the same candle already playing
-      if (activeCandle !== -1 && activeCandle !== idx) return;
-      selectReel(idx);
+  const groupOrder = cfg.groups.map(g => g.id);
+
+  groupOrder.forEach(gid => {
+    const gDef = cfg.groups.find(g => g.id === gid);
+    const reelsInGroup = cfg.reels.filter(r => r.group === gid);
+    if (!reelsInGroup.length) return;
+
+    const block = document.createElement('div');
+    block.className = 'candle-group-block';
+
+    const lbl = document.createElement('p');
+    lbl.className = 'candle-group-label';
+    lbl.textContent = gDef.label;
+    block.appendChild(lbl);
+
+    const row = document.createElement('div');
+    row.className = 'candle-row';
+
+    reelsInGroup.forEach(reel => {
+      const idx = cfg.reels.indexOf(reel);
+      const btn = document.createElement('button');
+      btn.className = 'candle-btn';
+      btn.setAttribute('aria-label', `Unlock ${reel.name}`);
+      btn.dataset.index = idx;
+      btn.innerHTML = `
+        <div class="candle-wrap">
+          <svg class="candle-svg" viewBox="0 0 48 150" aria-hidden="true">
+            <defs>
+              <radialGradient id="glow${idx}" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stop-color="#f5b944" stop-opacity=".6"/>
+                <stop offset="1" stop-color="#f5b944" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="fl${idx}" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0" stop-color="#f07030"/>
+                <stop offset="1" stop-color="#f5b944"/>
+              </linearGradient>
+            </defs>
+            <circle class="c-glow" cx="24" cy="26" r="34" fill="url(#glow${idx})"/>
+            <g class="c-flame">
+              <path d="M24 5C31.5 17 34 27 24 40 14 27 16.5 17 24 5Z" fill="url(#fl${idx})"/>
+              <path d="M24 22C27.8 28 27.8 33.5 24 39 20.2 33.5 20.2 28 24 22Z" fill="#fff4c9"/>
+            </g>
+            <line x1="24" y1="40" x2="24" y2="49" stroke="#3a2a28" stroke-width="2" stroke-linecap="round"/>
+            <rect x="14" y="48" width="20" height="100" rx="2" fill="#f4eadc"/>
+            <g stroke="#8a2442" stroke-width="6">
+              <path d="M8 76 40 60M8 104 40 88M8 132 40 116"/>
+            </g>
+          </svg>
+          <span class="candle-num">${reel.name.replace('Crew Member ', '')}</span>
+        </div>`;
+      btn.addEventListener('click', () => {
+        if (activeCandle !== -1 && activeCandle !== idx) return;
+        selectReel(idx);
+      });
+      row.appendChild(btn);
     });
-    candleRow.appendChild(btn);
+
+    block.appendChild(row);
+    candleGroupsEl.appendChild(block);
   });
 
-  // ── Next button (injected into candle stage) ───────────────────────────────
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 's1__btn next-reel-btn';
-  nextBtn.style.cssText = 'display:none; margin-top: 24px;';
-  nextBtn.innerHTML = `<span>Next</span>
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M4 8h8M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-  nextBtn.addEventListener('click', () => {
-    // Reset player, go back to candle stage, unlock all candles
-    pauseAll();
-    candleStage.style.display = '';
-    screenEl.style.display = 'none';
-    audioPlayerEl.style.display = 'none';
-    nextBtn.style.display = 'none';
-    activeCandle = -1;
-    currentIndex = -1;
-    // Remove active highlight from all candles
-    document.querySelectorAll('.candle-btn').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
-  });
-  candleStage.appendChild(nextBtn);
-
-  // ── Sidebar candle dots ───────────────────────────────────────────────────
   const dotsEl = $('#reel-candles');
   cfg.reels.forEach((_, idx) => {
     const dot = document.createElement('div');
@@ -128,7 +130,6 @@ async function boot() {
     candleDots.push(dot);
   });
 
-  // ── Build queue ───────────────────────────────────────────────────────────
   const queueEl = $('#queue');
   for (const g of cfg.groups) {
     const reels = cfg.reels.filter(r => r.group === g.id);
@@ -166,7 +167,6 @@ async function boot() {
     queueEl.appendChild(group);
   }
 
-  // ── Hidden video element for video-as-audio ───────────────────────────────
   const hiddenVideo = document.createElement('video');
   hiddenVideo.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;';
   hiddenVideo.muted = false;
@@ -174,7 +174,6 @@ async function boot() {
   hiddenVideo.preload = 'metadata';
   document.body.appendChild(hiddenVideo);
 
-  // ── Video player wiring ───────────────────────────────────────────────────
   const videoEl = $('#video-main');
   const bigPlay = $('#big-play');
   const ctlPlay = $('#ctl-play');
@@ -195,7 +194,7 @@ async function boot() {
   ctlPlay.addEventListener('click', toggleVideoPlay);
   videoEl.addEventListener('ended', () => {
     screenEl.dataset.state = 'paused';
-    showNextBtn();
+    if (watched.size < total) videoNextBtn.style.display = 'inline-flex';
   });
   videoEl.addEventListener('timeupdate', () => {
     if (!videoEl.duration) return;
@@ -214,8 +213,8 @@ async function boot() {
     if (document.fullscreenElement) document.exitFullscreen();
     else screenEl.requestFullscreen?.();
   });
+  videoNextBtn.addEventListener('click', () => { pauseAll(); showCandleStage(); });
 
-  // ── Shared audio player ───────────────────────────────────────────────────
   let activeAudioEl = null;
   const aCtlPlay = $('#a-ctl-play');
   const aCtlMute = $('#a-ctl-mute');
@@ -229,7 +228,6 @@ async function boot() {
   const pureAudioEl = new Audio();
   pureAudioEl.crossOrigin = 'anonymous';
 
-  // ── Web Audio gain node — boosts volume for specific tracks ───────────────
   let audioCtx = null;
   let gainNode = null;
   let audioSourceNode = null;
@@ -245,12 +243,10 @@ async function boot() {
 
   function setGainForReel(reel) {
     ensureAudioContext();
-    // Boost crewmember_1.mp3 by 3x, everything else stays at 1
-    const isBoosted = reel.sources[0].includes('crewmember_1');
-    gainNode.gain.setTargetAtTime(isBoosted ? 3.0 : 1.0, audioCtx.currentTime, 0.05);
+    const boosted = reel.sources[0].includes('crewmember_1');
+    gainNode.gain.setTargetAtTime(boosted ? 3.0 : 1.0, audioCtx.currentTime, 0.05);
   }
 
-  // ── Waveform ──────────────────────────────────────────────────────────────
   const waveCanvas = $('#wave-canvas');
   const waveCtx = waveCanvas.getContext('2d');
   let waveRaf;
@@ -323,7 +319,7 @@ async function boot() {
     audioPlayerEl.dataset.state = 'paused';
     cancelAnimationFrame(waveRaf);
     drawWave(false);
-    showNextBtn();
+    if (watched.size < total) audioNextBtn.style.display = 'inline-flex';
   }
 
   aCtlPlay.addEventListener('click', toggleAudioPlay);
@@ -336,6 +332,7 @@ async function boot() {
     if (activeAudioEl && activeAudioEl.duration)
       activeAudioEl.currentTime = (aScrub.value / 1000) * activeAudioEl.duration;
   });
+  audioNextBtn.addEventListener('click', () => { pauseAll(); showCandleStage(); });
 
   function attachAudioEvents(el) {
     el.addEventListener('timeupdate', syncAudioProgress);
@@ -345,20 +342,12 @@ async function boot() {
   attachAudioEvents(pureAudioEl);
   attachAudioEvents(hiddenVideo);
 
-  // ── Next button logic ─────────────────────────────────────────────────────
-  function showNextBtn() {
-    // Show Next after a reel finishes — unless all are watched
-    if (watched.size < total) {
-      nextBtn.style.display = 'inline-flex';
-    }
-  }
-
-  // ── Select reel ───────────────────────────────────────────────────────────
   function selectReel(idx) {
     pauseAll();
     currentIndex = idx;
     activeCandle = idx;
-    nextBtn.style.display = 'none';
+    videoNextBtn.style.display = 'none';
+    audioNextBtn.style.display = 'none';
     const reel = cfg.reels[idx];
     const g = cfg.groups.find(gr => gr.id === reel.group);
 
@@ -432,7 +421,6 @@ async function boot() {
     activeAudioEl = null;
   }
 
-  // ── Mark watched ──────────────────────────────────────────────────────────
   function markWatched(idx) {
     if (watched.has(idx)) return;
     watched.add(idx);
@@ -454,11 +442,11 @@ async function boot() {
     if (watched.size === total) {
       wishEl.textContent = 'Make a wish. 🕯️';
       wishEl.classList.add('show');
-      nextBtn.style.display = 'none';
+      videoNextBtn.style.display = 'none';
+      audioNextBtn.style.display = 'none';
     }
   }
 
-  // ── Keyboard ──────────────────────────────────────────────────────────────
   document.addEventListener('keydown', (e) => {
     if (!s2.classList.contains('visible')) return;
     if (e.key === ' ') {
@@ -473,7 +461,6 @@ async function boot() {
   });
 }
 
-// ─── Embers ───────────────────────────────────────────────────────────────────
 (function embers() {
   const canvas = document.getElementById('embers');
   const ctx = canvas.getContext('2d');
