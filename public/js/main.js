@@ -25,12 +25,13 @@ async function boot() {
   statusEl.textContent = `0 of ${total} lit`;
 
   // ── Screen 1 → 2 transition ───────────────────────────────────────────────
+  // NOTE: NO { once: true } — must work every time back is pressed
   enterBtn.addEventListener('click', () => {
     s1.classList.add('hidden');
     s2.classList.remove('hidden');
     s2.classList.add('visible');
     s2.removeAttribute('aria-hidden');
-  }, { once: true });
+  });
 
   backBtn.addEventListener('click', () => {
     pauseAll();
@@ -38,10 +39,13 @@ async function boot() {
     s2.classList.add('hidden');
     s1.classList.remove('hidden');
     s1.removeAttribute('aria-hidden');
+    // Full reset of player area
     candleStage.style.display = '';
     screenEl.style.display = 'none';
     audioPlayerEl.style.display = 'none';
+    nextBtn.style.display = 'none';
     currentIndex = -1;
+    activeCandle = -1;
   });
 
   // ── Candle row ────────────────────────────────────────────────────────────
@@ -49,6 +53,7 @@ async function boot() {
   const candleDots = [];
   const watched = new Set();
   let currentIndex = -1;
+  let activeCandle = -1; // which candle is currently unlocked and playing
 
   cfg.reels.forEach((reel, idx) => {
     const btn = document.createElement('button');
@@ -81,9 +86,37 @@ async function boot() {
         </svg>
         <span class="candle-num">${String(idx + 1).padStart(2, '0')}</span>
       </div>`;
-    btn.addEventListener('click', () => selectReel(idx));
+    btn.addEventListener('click', () => {
+      // Only allow clicking if no candle is currently active,
+      // OR if this is the same candle already playing
+      if (activeCandle !== -1 && activeCandle !== idx) return;
+      selectReel(idx);
+    });
     candleRow.appendChild(btn);
   });
+
+  // ── Next button (injected into candle stage) ───────────────────────────────
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 's1__btn next-reel-btn';
+  nextBtn.style.cssText = 'display:none; margin-top: 24px;';
+  nextBtn.innerHTML = `<span>Next</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4 8h8M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  nextBtn.addEventListener('click', () => {
+    // Reset player, go back to candle stage, unlock all candles
+    pauseAll();
+    candleStage.style.display = '';
+    screenEl.style.display = 'none';
+    audioPlayerEl.style.display = 'none';
+    nextBtn.style.display = 'none';
+    activeCandle = -1;
+    currentIndex = -1;
+    // Remove active highlight from all candles
+    document.querySelectorAll('.candle-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
+  });
+  candleStage.appendChild(nextBtn);
 
   // ── Sidebar candle dots ───────────────────────────────────────────────────
   const dotsEl = $('#reel-candles');
@@ -124,7 +157,10 @@ async function boot() {
         <div class="q-item__lock" data-index="${idx}">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" opacity=".5"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </div>`;
-      item.addEventListener('click', () => selectReel(idx));
+      item.addEventListener('click', () => {
+        if (activeCandle !== -1 && activeCandle !== idx) return;
+        selectReel(idx);
+      });
       group.appendChild(item);
     }
     queueEl.appendChild(group);
@@ -138,7 +174,7 @@ async function boot() {
   hiddenVideo.preload = 'metadata';
   document.body.appendChild(hiddenVideo);
 
-  // ── Video player wiring (for "last" crew / pure video type) ───────────────
+  // ── Video player wiring ───────────────────────────────────────────────────
   const videoEl = $('#video-main');
   const bigPlay = $('#big-play');
   const ctlPlay = $('#ctl-play');
@@ -157,7 +193,10 @@ async function boot() {
 
   bigPlay.addEventListener('click', toggleVideoPlay);
   ctlPlay.addEventListener('click', toggleVideoPlay);
-  videoEl.addEventListener('ended', () => { screenEl.dataset.state = 'paused'; });
+  videoEl.addEventListener('ended', () => {
+    screenEl.dataset.state = 'paused';
+    showNextBtn();
+  });
   videoEl.addEventListener('timeupdate', () => {
     if (!videoEl.duration) return;
     scrub.value = (videoEl.currentTime / videoEl.duration) * 1000;
@@ -176,11 +215,8 @@ async function boot() {
     else screenEl.requestFullscreen?.();
   });
 
-  // ── Shared audio player state ─────────────────────────────────────────────
-  // activeAudioEl points to either the Audio() object (for pure audio)
-  // or the hiddenVideo element (for video-as-audio)
+  // ── Shared audio player ───────────────────────────────────────────────────
   let activeAudioEl = null;
-
   const aCtlPlay = $('#a-ctl-play');
   const aCtlMute = $('#a-ctl-mute');
   const aScrub = $('#a-scrub');
@@ -190,11 +226,9 @@ async function boot() {
   const audioGroup = $('#audio-group');
   let audioPlaying = false;
   let audioMuted = false;
-
-  // Pure audio element (for type === 'audio')
   const pureAudioEl = new Audio();
 
-  // ── Waveform canvas ───────────────────────────────────────────────────────
+  // ── Waveform ──────────────────────────────────────────────────────────────
   const waveCanvas = $('#wave-canvas');
   const waveCtx = waveCanvas.getContext('2d');
   let waveRaf;
@@ -234,7 +268,6 @@ async function boot() {
   }
   window.addEventListener('resize', resizeWave);
 
-  // ── Audio card play/pause (works for both pure audio + video-as-audio) ────
   function toggleAudioPlay() {
     if (!activeAudioEl) return;
     if (audioPlaying) {
@@ -260,7 +293,7 @@ async function boot() {
   }
 
   function onAudioLoaded() {
-    aTimeDur.textContent = fmtTime(activeAudioEl.duration);
+    if (activeAudioEl) aTimeDur.textContent = fmtTime(activeAudioEl.duration);
   }
 
   function onAudioEnded() {
@@ -268,9 +301,9 @@ async function boot() {
     audioPlayerEl.dataset.state = 'paused';
     cancelAnimationFrame(waveRaf);
     drawWave(false);
+    showNextBtn();
   }
 
-  // Wire shared controls to whatever activeAudioEl is at time of event
   aCtlPlay.addEventListener('click', toggleAudioPlay);
   aCtlMute.addEventListener('click', () => {
     audioMuted = !audioMuted;
@@ -282,7 +315,6 @@ async function boot() {
       activeAudioEl.currentTime = (aScrub.value / 1000) * activeAudioEl.duration;
   });
 
-  // Forward events from both audio sources through shared handlers
   function attachAudioEvents(el) {
     el.addEventListener('timeupdate', syncAudioProgress);
     el.addEventListener('loadedmetadata', onAudioLoaded);
@@ -291,10 +323,20 @@ async function boot() {
   attachAudioEvents(pureAudioEl);
   attachAudioEvents(hiddenVideo);
 
+  // ── Next button logic ─────────────────────────────────────────────────────
+  function showNextBtn() {
+    // Show Next after a reel finishes — unless all are watched
+    if (watched.size < total) {
+      nextBtn.style.display = 'inline-flex';
+    }
+  }
+
   // ── Select reel ───────────────────────────────────────────────────────────
   function selectReel(idx) {
     pauseAll();
     currentIndex = idx;
+    activeCandle = idx;
+    nextBtn.style.display = 'none';
     const reel = cfg.reels[idx];
     const g = cfg.groups.find(gr => gr.id === reel.group);
 
@@ -308,12 +350,10 @@ async function boot() {
     candleStage.style.display = 'none';
 
     if (reel.type === 'audio') {
-      // ── Pure audio card ──────────────────────────────────────────────────
       screenEl.style.display = 'none';
       audioPlayerEl.style.display = 'flex';
       audioName.textContent = reel.name;
       audioGroup.textContent = g ? g.label : '';
-
       activeAudioEl = pureAudioEl;
       pureAudioEl.src = reel.sources[0];
       pureAudioEl.load();
@@ -326,12 +366,10 @@ async function boot() {
       drawWave(false);
 
     } else if (reel.type === 'video-as-audio') {
-      // ── Video playing hidden, audio card shown on top ────────────────────
       screenEl.style.display = 'none';
       audioPlayerEl.style.display = 'flex';
       audioName.textContent = reel.name;
       audioGroup.textContent = g ? g.label : '';
-
       activeAudioEl = hiddenVideo;
       hiddenVideo.src = reel.sources[0];
       hiddenVideo.load();
@@ -344,7 +382,6 @@ async function boot() {
       drawWave(false);
 
     } else {
-      // ── Normal video player ──────────────────────────────────────────────
       audioPlayerEl.style.display = 'none';
       screenEl.style.display = 'block';
       reelName.textContent = reel.name;
@@ -363,12 +400,9 @@ async function boot() {
   }
 
   function pauseAll() {
-    // Pause video player
     videoEl.pause();
     screenEl.dataset.state = 'paused';
-    // Pause hidden video
     hiddenVideo.pause();
-    // Pause pure audio
     pureAudioEl.pause();
     audioPlaying = false;
     cancelAnimationFrame(waveRaf);
@@ -397,6 +431,7 @@ async function boot() {
     if (watched.size === total) {
       wishEl.textContent = 'Make a wish. 🕯️';
       wishEl.classList.add('show');
+      nextBtn.style.display = 'none';
     }
   }
 
