@@ -23,19 +23,17 @@
 
   <canvas id="embers" aria-hidden="true"></canvas>
 
-  <!-- SCREEN 1: Landing -->
+  <!-- SCREEN 1 -->
   <section class="s1" id="screen1">
     <div class="s1__inner">
       <div class="s1__top">
         <span class="s1__from">from two crews &mdash; 2026</span>
       </div>
-
       <div class="s1__center">
         <p class="s1__pre">happy birthday</p>
         <h1 class="s1__name">Mrs.<br>Frieboth</h1>
         <p class="s1__sub">We made something for you.</p>
       </div>
-
       <div class="s1__bottom">
         <button class="s1__btn" id="enter-btn" type="button">
           <span>Watch the reels</span>
@@ -48,30 +46,34 @@
     </div>
   </section>
 
-  <!-- SCREEN 2: Reels -->
+  <!-- SCREEN 2 -->
   <section class="s2" id="screen2" aria-hidden="true">
     <div class="s2__layout">
 
-      <!-- Left: video player -->
-      <div class="s2__player">
-        <div class="screen" id="screen" data-state="idle">
-          <video class="screen__main" id="video-main" playsinline preload="metadata"></video>
+      <!-- Left: player area -->
+      <div class="s2__player" id="player-area">
 
+        <!-- Candle lock screen (shown until a candle is clicked) -->
+        <div class="candle-stage" id="candle-stage">
+          <p class="candle-stage__hint">click a candle to unlock a reel</p>
+          <div class="candle-row" id="candle-row"></div>
+        </div>
+
+        <!-- Video player (hidden until a video reel is selected) -->
+        <div class="screen" id="screen" data-state="idle" style="display:none">
+          <video class="screen__main" id="video-main" playsinline preload="metadata"></video>
           <button class="screen__big" id="big-play" type="button" aria-label="Play">
             <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
               <path d="M6 4.5v15l13-7.5-13-7.5z" fill="currentColor"/>
             </svg>
           </button>
-
           <div class="screen__msg" id="screen-msg" role="status">
             <p>Video not found.</p>
           </div>
-
           <div class="screen__caption">
             <span class="screen__tag" id="reel-group"></span>
             <strong id="reel-name"></strong>
           </div>
-
           <div class="controls" id="controls">
             <button class="ctl" id="ctl-play" type="button" aria-label="Play">
               <svg class="i-play" viewBox="0 0 24 24" width="18" height="18"><path d="M7 4.5v15l13-7.5-13-7.5z" fill="currentColor"/></svg>
@@ -87,15 +89,38 @@
             <button class="ctl" id="ctl-full" type="button" aria-label="Fullscreen">
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="square"/></svg>
             </button>
-            <button class="ctl ctl--music" id="ctl-music" type="button" aria-label="Toggle music">
-              <svg class="i-music-on" viewBox="0 0 24 24" width="18" height="18"><path d="M9 18V6l12-2v12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
-              <svg class="i-music-off" viewBox="0 0 24 24" width="18" height="18"><path d="M9 18V6l12-2v12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-dasharray="4 2"/><circle cx="6" cy="18" r="3" fill="currentColor" opacity=".4"/><circle cx="18" cy="16" r="3" fill="currentColor" opacity=".4"/></svg>
-            </button>
           </div>
         </div>
+
+        <!-- Audio player (hidden until an audio reel is selected) -->
+        <div class="audio-player" id="audio-player" style="display:none">
+          <div class="audio-player__inner">
+            <div class="audio-player__label">
+              <span class="audio-player__tag" id="audio-group"></span>
+              <strong class="audio-player__name" id="audio-name"></strong>
+            </div>
+            <div class="audio-player__wave" id="audio-wave">
+              <canvas id="wave-canvas"></canvas>
+            </div>
+            <div class="audio-player__controls">
+              <button class="ctl" id="a-ctl-play" type="button" aria-label="Play">
+                <svg class="i-play" viewBox="0 0 24 24" width="22" height="22"><path d="M7 4.5v15l13-7.5-13-7.5z" fill="currentColor"/></svg>
+                <svg class="i-pause" viewBox="0 0 24 24" width="22" height="22"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z" fill="currentColor"/></svg>
+              </button>
+              <span class="time" id="a-time-cur">0:00</span>
+              <input class="scrub" id="a-scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek">
+              <span class="time" id="a-time-dur">0:00</span>
+              <button class="ctl" id="a-ctl-mute" type="button" aria-label="Mute">
+                <svg class="i-vol" viewBox="0 0 24 24" width="18" height="18"><path d="M4 9.5v5h4l5 4v-13l-5 4H4z" fill="currentColor"/><path d="M16 8.5c1.6 1.2 1.6 5.8 0 7M18.5 6c3 2.6 3 9.4 0 12" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+                <svg class="i-mute" viewBox="0 0 24 24" width="18" height="18"><path d="M4 9.5v5h4l5 4v-13l-5 4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Right: queue + header -->
+      <!-- Right: sidebar -->
       <div class="s2__side">
         <div class="s2__header">
           <button class="s2__back" id="back-btn" type="button" aria-label="Back">
@@ -103,7 +128,7 @@
           </button>
           <div>
             <p class="s2__title">Mrs. Frieboth</p>
-            <p class="s2__status" id="reel-status">0 of 4 watched</p>
+            <p class="s2__status" id="reel-status">0 of 5 lit</p>
           </div>
           <div class="s2__candles" id="reel-candles"></div>
         </div>
