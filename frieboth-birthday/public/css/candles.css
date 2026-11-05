@@ -1,0 +1,77 @@
+/* Candle row. Used decoratively in the hero and as the reel picker. */
+.candles {
+  --w: clamp(26px, 3.6vw, 52px);
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(8px, 1.4vw, 20px);
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--wine);
+}
+.candles--select { --w: clamp(34px, 4vw, 52px); }
+
+.candle {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: var(--w);
+  color: var(--ink-faint);
+  transition: color .3s;
+}
+.candle svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.candle__n {
+  position: absolute;
+  top: calc(100% + 8px);
+  font: 500 .62rem/1 var(--font-mono);
+  letter-spacing: .12em;
+}
+.candles--select { margin-bottom: 26px; }
+
+/* Flame: outer group handles light/unlight, inner group handles flicker */
+.candle .flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform .7s var(--ease), opacity .4s;
+}
+.candle .flame__in {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.candle .glow { opacity: 0; transition: opacity .8s; }
+
+.candle.is-lit .flame { transform: scale(1); opacity: 1; }
+.candle.is-lit .flame__in { animation: flicker 1.7s ease-in-out infinite; animation-delay: calc(var(--i) * -.41s); }
+.candle.is-lit .glow { opacity: 1; }
+.candle.is-lit { color: var(--flame); }
+
+@keyframes flicker {
+  0%   { transform: scale(1, 1) skewX(0deg); }
+  18%  { transform: scale(.94, 1.07) skewX(-3deg); }
+  41%  { transform: scale(1.04, .95) skewX(2.5deg); }
+  63%  { transform: scale(.97, 1.05) skewX(-1.5deg); }
+  82%  { transform: scale(1.03, .97) skewX(3deg); }
+  100% { transform: scale(1, 1) skewX(0deg); }
+}
+
+/* Interactive variant */
+button.candle { cursor: pointer; }
+button.candle:hover { color: var(--ink); }
+button.candle.is-lit:hover { color: var(--flame); }
+button.candle.is-active .candle__n { color: var(--flame); }
+button.candle.is-active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 24px);
+  width: 4px; height: 4px;
+  margin-left: -2px;
+  background: var(--flame);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .candle.is-lit .flame__in { animation: none; }
+  .candle .flame, .candle .glow { transition: none; }
+}

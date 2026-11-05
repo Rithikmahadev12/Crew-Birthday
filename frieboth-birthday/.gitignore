@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+.env
+# Original iPhone clips are large. The converted .mp4 files are what the site uses.
+public/videos/*.mov
+public/videos/*.MOV

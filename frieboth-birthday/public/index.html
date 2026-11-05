@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Happy Birthday Mrs. Frieboth</title>
+  <meta name="description" content="Video messages from two crews, for Mrs. Frieboth's birthday.">
+  <meta name="theme-color" content="#16080c">
+  <meta property="og:title" content="Happy Birthday Mrs. Frieboth">
+  <meta property="og:description" content="Reels from two crews. Light every candle.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/gate.css">
+  <link rel="stylesheet" href="css/hero.css">
+  <link rel="stylesheet" href="css/candles.css">
+  <link rel="stylesheet" href="css/theater.css">
+  <link rel="stylesheet" href="css/credits.css">
+
+  <script>document.documentElement.classList.add('js');</script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <canvas id="embers" aria-hidden="true"></canvas>
+
+  <!-- Intro gate: one click so the reels are allowed to play with sound -->
+  <div class="gate" id="gate">
+    <div class="gate__inner">
+      <svg class="gate__flame" viewBox="0 0 48 70" aria-hidden="true">
+        <path d="M24 4 C32 18 35 28 24 42 C13 28 16 18 24 4Z" fill="#ffc24b"/>
+        <path d="M24 22 C28 29 28 35 24 41 C20 35 20 29 24 22Z" fill="#fff4c9"/>
+        <rect x="21" y="44" width="6" height="26" rx="1" fill="#f4eadc"/>
+      </svg>
+      <p class="gate__kicker">A message from two crews</p>
+      <button class="gate__btn" id="gate-btn" type="button">
+        <span>Light the candles</span>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9h11M10 4l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      </button>
+      <p class="gate__hint">Sound on for the reels</p>
+    </div>
+  </div>
+
+  <main>
+    <!-- ───────────── HERO ───────────── -->
+    <section class="hero" id="top">
+      <div class="wrap hero__wrap">
+        <!-- Clapper slate: the page is a premiere, the videos are reels -->
+        <div class="slate" role="presentation">
+          <div class="slate__cell"><span>Prod.</span><b>Birthday</b></div>
+          <div class="slate__cell"><span>Scene</span><b>Mrs. Frieboth</b></div>
+          <div class="slate__cell"><span>Reels</span><b id="reel-count">04</b></div>
+          <div class="slate__cell"><span>Roll</span><b>2026</b></div>
+        </div>
+
+        <div class="hero__main">
+          <h1 class="title" aria-label="Happy Birthday Mrs. Frieboth">
+            <span class="title__line" data-split aria-hidden="true">Happy</span>
+            <span class="title__line" data-split aria-hidden="true">Birthday</span>
+            <span class="title__name" data-split data-split-base="520" aria-hidden="true">Mrs. Frieboth</span>
+          </h1>
+          <div class="hero__candles" id="hero-candles" aria-hidden="true"></div>
+        </div>
+
+        <div class="hero__foot">
+          <p>From this year&rsquo;s crew and her last crew</p>
+          <a class="hero__jump" href="#reels">
+            <span>Watch the reels</span>
+            <svg width="14" height="18" viewBox="0 0 14 18" fill="none" aria-hidden="true"><path d="M7 1v15M2 11l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────── REELS ───────────── -->
+    <section class="reels" id="reels">
+      <div class="wrap">
+        <header class="reels__head" data-reveal>
+          <div>
+            <p class="eyebrow">The reels</p>
+            <h2 class="h2">Watch them all. <em>Every candle counts.</em></h2>
+          </div>
+          <div class="reels__candles">
+            <div id="reel-candles" class="candles candles--select" role="group" aria-label="Choose a reel"></div>
+            <p class="reels__status" id="reel-status" aria-live="polite">0 of 4 lit</p>
+          </div>
+        </header>
+
+        <div class="theater" data-reveal>
+          <div class="screen" id="screen" data-state="idle">
+            <video class="screen__bg" id="video-bg" muted playsinline preload="metadata" aria-hidden="true" tabindex="-1"></video>
+            <video class="screen__main" id="video-main" playsinline preload="metadata"></video>
+
+            <button class="screen__big" id="big-play" type="button" aria-label="Play reel">
+              <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M7 4.5v15l13-7.5-13-7.5z" fill="currentColor"/></svg>
+            </button>
+
+            <div class="screen__msg" id="screen-msg" role="status">
+              <p>This reel is not loading.</p>
+              <small>Check the file name in <code>data/crew.json</code>, or convert the clip to .mp4.</small>
+            </div>
+
+            <div class="screen__caption">
+              <span class="screen__tag" id="reel-group">This year&rsquo;s crew</span>
+              <strong id="reel-name">Crew Member 1</strong>
+            </div>
+
+            <div class="controls" id="controls">
+              <button class="ctl" id="ctl-play" type="button" aria-label="Play">
+                <svg class="i-play" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 4.5v15l13-7.5-13-7.5z" fill="currentColor"/></svg>
+                <svg class="i-pause" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z" fill="currentColor"/></svg>
+              </button>
+              <span class="time" id="time-cur">0:00</span>
+              <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek">
+              <span class="time" id="time-dur">0:00</span>
+              <button class="ctl" id="ctl-mute" type="button" aria-label="Mute">
+                <svg class="i-vol" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.5v5h4l5 4v-13l-5 4H4z" fill="currentColor"/><path d="M16 8.5c1.6 1.2 1.6 5.8 0 7M18.5 6c3 2.6 3 9.4 0 12" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+                <svg class="i-mute" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.5v5h4l5 4v-13l-5 4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+              <button class="ctl" id="ctl-full" type="button" aria-label="Fullscreen">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="square"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <aside class="queue" aria-label="Reel list">
+            <div id="queue"></div>
+            <p class="queue__keys"><kbd>Space</kbd> play <kbd>&larr;</kbd><kbd>&rarr;</kbd> reel <kbd>M</kbd> mute <kbd>F</kbd> full</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────── CREDITS ───────────── -->
+    <section class="credits" id="credits">
+      <div class="wrap credits__wrap">
+        <p class="wish" id="wish" aria-live="polite">Make a wish.</p>
+        <p class="eyebrow" data-reveal>A note from the crews</p>
+        <blockquote class="letter" id="letter" data-reveal></blockquote>
+
+        <div class="roll" id="roll" data-reveal></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot__wrap">
+      <span class="foot__name">Mrs. Frieboth</span>
+      <span class="foot__meta">Made by your crews &middot; 2026</span>
+    </div>
+  </footer>
+</body>
+</html>

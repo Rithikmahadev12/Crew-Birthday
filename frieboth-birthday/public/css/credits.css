@@ -1,0 +1,72 @@
+/* End credits: the crews roll by name, like a premiere. */
+.credits {
+  position: relative;
+  padding-block: clamp(80px, 14vh, 180px);
+  border-top: 1px solid var(--rule);
+  background: linear-gradient(180deg, var(--bg-2), var(--bg) 70%);
+}
+.credits__wrap { display: grid; gap: clamp(28px, 5vw, 56px); justify-items: start; }
+
+.letter {
+  max-width: 22em;
+  font: italic 400 clamp(2rem, 5.6vw, 5rem)/1.05 var(--font-serif);
+  letter-spacing: -.012em;
+  text-wrap: balance;
+}
+
+/* Wish line appears only when all candles are lit */
+.wish {
+  font: 800 clamp(3rem, 12vw, 11rem)/.85 var(--font-display);
+  letter-spacing: -.05em;
+  color: var(--flame);
+  display: none;
+}
+html.all-lit .wish { display: block; animation: wish-in 1.4s var(--ease) both; }
+@keyframes wish-in { from { opacity: 0; transform: translateY(24px) scale(.97); } to { opacity: 1; transform: none; } }
+
+.roll {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(24px, 4vw, 64px);
+  margin-top: clamp(16px, 4vw, 48px);
+}
+.roll__label {
+  padding-bottom: 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  font: 500 .68rem/1 var(--font-mono);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.roll__line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-block: 12px;
+  font: 500 clamp(1rem, 1.6vw, 1.25rem)/1.2 var(--font-display);
+}
+.roll__line::after {
+  content: '';
+  order: 1;
+  flex: 1;
+  border-bottom: 1px dotted var(--ink-faint);
+  transform: translateY(-4px);
+}
+.roll__line span:last-child { order: 2; font: 400 .72rem/1 var(--font-mono); color: var(--ink-dim); letter-spacing: .1em; }
+
+/* ── Footer ── */
+.foot { border-top: 1px solid var(--rule); background: var(--bg); }
+.foot__wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-block: 32px max(32px, env(safe-area-inset-bottom, 0px));
+}
+.foot__name { font: 800 1.1rem/1 var(--font-display); letter-spacing: -.02em; color: var(--ink-dim); }
+.foot__meta { font: 400 .7rem/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) { html.all-lit .wish { animation: none; } }

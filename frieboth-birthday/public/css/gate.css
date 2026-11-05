@@ -1,0 +1,70 @@
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  background: var(--bg);
+  padding: 24px max(24px, env(safe-area-inset-left, 0px));
+}
+html.js .gate { display: grid; }
+html.is-open .gate {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .9s var(--ease) .1s, visibility 0s linear 1s;
+}
+
+/* No scrolling behind the gate */
+html.js:not(.is-open) body { overflow: hidden; height: 100svh; }
+
+.gate__inner {
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  text-align: center;
+}
+
+.gate__flame {
+  width: 54px;
+  filter: drop-shadow(0 0 22px rgba(255, 194, 75, .45));
+  animation: gate-breathe 2.4s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+@keyframes gate-breathe {
+  0%, 100% { transform: scale(1) rotate(-1deg); }
+  50%      { transform: scale(1.05, 1.1) rotate(1.5deg); }
+}
+
+.gate__kicker {
+  font: 500 .72rem/1 var(--font-mono);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.gate__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 26px;
+  border: 1px solid var(--flame);
+  color: var(--flame);
+  font: 800 1.15rem/1 var(--font-display);
+  letter-spacing: -.01em;
+  background: transparent;
+  transition: background .25s var(--ease), color .25s var(--ease), transform .25s var(--ease);
+}
+.gate__btn:hover { background: var(--flame); color: var(--bg); }
+.gate__btn:active { transform: translateY(1px); }
+
+.gate__hint {
+  font: 400 .72rem/1 var(--font-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate__flame { animation: none; }
+  html.is-open .gate { transition: none; }
+}

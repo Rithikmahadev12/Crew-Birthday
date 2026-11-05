@@ -1,0 +1,22 @@
+/* Design tokens. One committed dark palette: wine-dark room, candle-flame light. */
+:root {
+  --bg:        #16080c;
+  --bg-2:      #1e0b11;
+  --bg-3:      #2a1019;
+  --ink:       #f4eadc;
+  --ink-dim:   #b39a93;
+  --ink-faint: #75595a;
+  --rule:      #3b1b24;
+  --flame:     #ffc24b;
+  --flame-hot: #ff7a38;
+  --wine:      #8a2442;
+
+  --font-display: 'Bricolage Grotesque', 'Arial Black', system-ui, sans-serif;
+  --font-serif:   'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  --gutter: clamp(16px, 4vw, 72px);
+  --ease: cubic-bezier(.2, .7, .1, 1);
+
+  color-scheme: dark;
+}

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: frieboth-birthday
+    runtime: static
+    staticPublishPath: ./public
+    headers:
+      - path: /videos/*
+        name: Cache-Control
+        value: public, max-age=604800
+      - path: /css/*
+        name: Cache-Control
+        value: public, max-age=3600
+      - path: /js/*
+        name: Cache-Control
+        value: public, max-age=3600
