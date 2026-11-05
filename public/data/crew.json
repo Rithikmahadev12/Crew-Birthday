@@ -8,42 +8,42 @@
   ],
   "reels": [
     {
-      "name": "Crew Member 1",
+      "name": "Vannessa",
       "group": "current",
       "note": "",
       "type": "video-as-audio",
       "sources": ["videos/IMG_2448.mp4"]
     },
     {
-      "name": "Crew Member 2",
+      "name": "Hs Crew Member",
       "group": "last",
       "note": "",
       "type": "video",
       "sources": ["videos/IMG_5350.mp4"]
     },
     {
-      "name": "Crew Member 3",
+      "name": "Maya",
       "group": "current",
       "note": "",
       "type": "video-as-audio",
       "sources": ["videos/VID_20261104_193157.mp4"]
     },
     {
-      "name": "Crew Member 4",
+      "name": "Hs Crew Member",
       "group": "last",
       "note": "",
       "type": "video",
       "sources": ["videos/IMG_5840.mp4"]
     },
     {
-      "name": "Crew Member 5",
+      "name": "Rithik",
       "group": "current",
       "note": "",
       "type": "audio",
       "sources": ["assets/Birthday.mp3"]
     },
     {
-      "name": "Crew Member 6",
+      "name": "Sai",
       "group": "current",
       "note": "",
       "type": "audio",
