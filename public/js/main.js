@@ -227,6 +227,28 @@ async function boot() {
   let audioPlaying = false;
   let audioMuted = false;
   const pureAudioEl = new Audio();
+  pureAudioEl.crossOrigin = 'anonymous';
+
+  // ── Web Audio gain node — boosts volume for specific tracks ───────────────
+  let audioCtx = null;
+  let gainNode = null;
+  let audioSourceNode = null;
+
+  function ensureAudioContext() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    gainNode = audioCtx.createGain();
+    gainNode.connect(audioCtx.destination);
+    audioSourceNode = audioCtx.createMediaElementSource(pureAudioEl);
+    audioSourceNode.connect(gainNode);
+  }
+
+  function setGainForReel(reel) {
+    ensureAudioContext();
+    // Boost crewmember_1.mp3 by 3x, everything else stays at 1
+    const isBoosted = reel.sources[0].includes('crewmember_1');
+    gainNode.gain.setTargetAtTime(isBoosted ? 3.0 : 1.0, audioCtx.currentTime, 0.05);
+  }
 
   // ── Waveform ──────────────────────────────────────────────────────────────
   const waveCanvas = $('#wave-canvas');
@@ -357,6 +379,7 @@ async function boot() {
       activeAudioEl = pureAudioEl;
       pureAudioEl.src = reel.sources[0];
       pureAudioEl.load();
+      setGainForReel(reel);
       audioPlaying = false;
       audioPlayerEl.dataset.state = 'paused';
       aScrub.value = 0;
