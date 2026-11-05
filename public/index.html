@@ -1,449 +1,120 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Figure</title>
-<link rel="stylesheet" href="/assets/css/fonts/bahnschrift.css">
-<link rel="stylesheet" href="/assets/css/settings/default.css">
-<link rel="stylesheet" href="/assets/css/index.css">
-<style>
-#setup-layer,#boot-layer{position:fixed;inset:0;z-index:1000}
-#boot-layer{background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column}
-#boot-logo{opacity:0;transform:scale(0.7);transition:none}
-#boot-glow{position:absolute;width:1px;height:1px;border-radius:50%;background:radial-gradient(circle,rgba(16,124,16,0.85) 0%,rgba(16,124,16,0.3) 35%,transparent 70%);pointer-events:none;opacity:0}
-#boot-tag{font-family:var(--xbox-font-primary);font-size:11px;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0);position:absolute;bottom:56px;left:50%;transform:translateX(-50%);font-weight:400}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Happy Birthday Mrs. Frieboth</title>
+  <meta name="theme-color" content="#0e0609">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 
-#setup-layer{background:#000;display:none}
-#setup-app{display:grid;grid-template-columns:1fr 1fr;height:100%;opacity:0}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
 
-#lp{background:#0c0c0c;display:flex;flex-direction:column;justify-content:space-between;padding:48px;border-right:1px solid rgba(255,255,255,0.06);position:relative;overflow:hidden}
-#lp::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(16,124,16,0.04) 0%,transparent 60%);pointer-events:none}
-.lp-top{display:flex;flex-direction:column}
-.lp-fig-icon{margin-bottom:44px}
-.lp-num{font-family:var(--xbox-font-primary);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.22);margin-bottom:14px}
-.lp-title{font-family:var(--xbox-font-primary);font-size:clamp(26px,3vw,40px);font-weight:600;line-height:1.1;letter-spacing:-0.5px;color:#fff}
-.lp-title em{color:#107C10;font-style:normal}
-.lp-sub{font-size:13px;color:rgba(255,255,255,0.32);margin-top:12px;line-height:1.7;max-width:260px}
-.lp-bot{display:flex;flex-direction:column;gap:10px}
-.s-track{display:flex;gap:5px}
-.st{height:3px;width:18px;border-radius:2px;background:rgba(255,255,255,0.1);transition:all 0.35s}
-.st.on{background:#107C10;width:32px}
-.st.done{background:rgba(255,255,255,0.28)}
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/screen1.css">
+  <link rel="stylesheet" href="css/screen2.css">
+  <link rel="stylesheet" href="css/player.css">
 
-#rp{background:#080808;display:flex;flex-direction:column;justify-content:center;padding:52px 48px;overflow-y:auto}
-.rp-pane{display:none;flex-direction:column;animation:fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both}
-.rp-pane.on{display:flex}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-
-.opt-list{display:flex;flex-direction:column;gap:7px;margin-bottom:28px}
-.opt{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:9px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);cursor:pointer;transition:background 0.15s,border-color 0.15s}
-.opt:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.13)}
-.opt.sel{background:rgba(16,124,16,0.11);border-color:rgba(16,124,16,0.48)}
-.opt-em{font-size:19px;width:26px;text-align:center;flex-shrink:0}
-.opt-body{flex:1}
-.opt-label{font-size:13px;font-weight:500;color:#fff;font-family:var(--xbox-font-primary)}
-.opt-desc{font-size:11px;color:rgba(255,255,255,0.28);margin-top:2px}
-.opt-chk{width:17px;height:17px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.18);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
-.opt.sel .opt-chk{background:#107C10;border-color:#107C10}
-.opt.sel .opt-chk::after{content:'';display:block;width:5px;height:5px;border-radius:50%;background:#fff}
-
-.qr-card{display:flex;gap:20px;align-items:flex-start;padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);margin-bottom:12px}
-.qr-img{width:88px;height:88px;background:#fff;border-radius:6px;flex-shrink:0;padding:7px}
-.qr-px{width:100%;height:100%;background-image:linear-gradient(#000,#000) 0 0/60% 9%,linear-gradient(#000,#000) 0 0/9% 60%,linear-gradient(#000,#000) 51% 0/9% 60%,linear-gradient(#000,#000) 0 51%/60% 9%,linear-gradient(#000,#000) 9% 9%/42% 9%,linear-gradient(#000,#000) 9% 9%/9% 42%,linear-gradient(#000,#000) 42% 9%/9% 42%,linear-gradient(#000,#000) 9% 42%/42% 9%,linear-gradient(#000,#000) 18% 18%/24% 24%,linear-gradient(#000,#000) 63% 0/37% 9%,linear-gradient(#000,#000) 91% 0/9% 60%,linear-gradient(#000,#000) 63% 51%/37% 9%,linear-gradient(#000,#000) 63% 9%/9% 42%,linear-gradient(#000,#000) 72% 18%/19% 24%,linear-gradient(#000,#000) 0 63%/60% 9%,linear-gradient(#000,#000) 0 63%/9% 37%,linear-gradient(#000,#000) 51% 63%/9% 28%,linear-gradient(#000,#000) 0 91%/60% 9%,linear-gradient(#000,#000) 9% 72%/33% 9%,linear-gradient(#000,#000) 18% 81%/9% 10%,linear-gradient(#000,#000) 72% 72%/9% 9%,linear-gradient(#000,#000) 81% 63%/9% 9%,linear-gradient(#000,#000) 63% 81%/9% 9%,linear-gradient(#000,#000) 81% 81%/9% 9%;background-repeat:no-repeat}
-.qr-info h3{font-size:13px;font-weight:600;margin-bottom:5px;font-family:var(--xbox-font-primary)}
-.qr-info p{font-size:12px;color:rgba(255,255,255,0.32);line-height:1.6}
-.qr-url{display:inline-block;margin-top:8px;font-size:10px;font-family:monospace;color:rgba(255,255,255,0.22);background:rgba(255,255,255,0.06);padding:3px 9px;border-radius:20px}
-.qr-note{font-size:11px;color:rgba(255,255,255,0.2);line-height:1.5;margin-bottom:28px}
-
-.gt-field{width:100%;background:transparent;border:none;color:#ffffff;font-size:14px;font-family:var(--xbox-font-primary);outline:none}
-.gt-field::placeholder{color:rgba(255,255,255,0.3)}
-.gt-hint{font-size:11px;color:rgba(255,255,255,0.25);margin-left:16px;margin-bottom:28px;transition:color 0.2s}
-.gt-hint.ok{color:#107C10}
-.gt-hint.err{color:var(--xbox-error)}
-
-.av-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:28px}
-.av{aspect-ratio:1;border-radius:8px;border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:all 0.15s;font-size:22px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03)}
-.av:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.07)}
-.av.sel{border-color:#107C10;background:rgba(16,124,16,0.1)}
-
-.th-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:28px}
-.th{height:60px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.07);cursor:pointer;position:relative;overflow:hidden;transition:border-color 0.15s,transform 0.15s}
-.th:hover{border-color:rgba(255,255,255,0.18);transform:translateY(-1px)}
-.th.sel{border-color:#107C10}
-.th-nm{position:absolute;bottom:0;left:0;right:0;padding:5px 9px;font-size:11px;font-weight:500;color:rgba(255,255,255,0.55);font-family:var(--xbox-font-primary)}
-#th-dark{background:linear-gradient(135deg,#111 40%,#0a1a0a)}
-#th-mid{background:linear-gradient(135deg,#07071a 40%,#0a0f1a)}
-#th-carb{background:linear-gradient(135deg,#141414 40%,#1c1c1c)}
-#th-for{background:linear-gradient(135deg,#071207 40%,#0d200d)}
-
-.btn-row{display:flex;gap:7px}
-.s-btn{padding:11px 22px;border-radius:var(--xbox-radius-md);font-family:var(--xbox-font-primary);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--xbox-transition);border:1px solid transparent;letter-spacing:0.1px}
-.s-btn-p{background:#107C10;color:#fff;border-color:#107C10;flex:1}
-.s-btn-p:hover{background:var(--xbox-green-hover)}
-.s-btn-p:disabled{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.07);color:rgba(255,255,255,0.2);cursor:not-allowed}
-.s-btn-g{background:transparent;color:rgba(255,255,255,0.3);border-color:rgba(255,255,255,0.09);padding:11px 16px}
-.s-btn-g:hover{color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.18)}
-
-#s-skip{position:fixed;top:18px;right:22px;background:transparent;border:none;color:rgba(255,255,255,0.22);font-size:12px;font-family:var(--xbox-font-primary);cursor:pointer;letter-spacing:0.4px;padding:7px;z-index:1100;display:none;transition:color 0.2s}
-#s-skip:hover{color:rgba(255,255,255,0.55)}
-
-#wb{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);background:#111;border:1px solid rgba(255,255,255,0.1);border-bottom:none;border-radius:13px 13px 0 0;padding:15px 30px 22px;display:flex;align-items:center;gap:13px;min-width:270px;transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);z-index:1200}
-#wb.show{transform:translateX(-50%) translateY(0)}
-.wb-av{font-size:26px}
-.wb-gr{font-size:11px;color:rgba(255,255,255,0.28);letter-spacing:0.2px;font-family:var(--xbox-font-primary)}
-.wb-nm{font-size:17px;font-weight:600;letter-spacing:-0.2px;margin-top:2px;font-family:var(--xbox-font-primary)}
-
-#main-app{display:none}
-</style>
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
 
-<div id="boot-layer">
-  <div id="boot-glow"></div>
-  <div id="boot-logo">
-    <svg width="72" height="72" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="28" height="28" fill="white"/>
-      <rect x="36" width="28" height="28" fill="white"/>
-      <rect width="28" height="28" y="36" fill="white"/>
-    </svg>
-  </div>
-  <div id="boot-tag">Figure</div>
-</div>
+  <canvas id="embers" aria-hidden="true"></canvas>
 
-<div id="setup-layer">
-  <button id="s-skip" onclick="skipSetup()">Skip setup</button>
-  <div id="setup-app">
-
-    <div id="lp">
-      <div class="lp-top">
-        <div class="lp-fig-icon">
-          <svg width="32" height="32" viewBox="0 0 64 64" fill="none">
-            <rect width="28" height="28" fill="white"/>
-            <rect x="36" width="28" height="28" fill="white"/>
-            <rect width="28" height="28" y="36" fill="white"/>
-          </svg>
-        </div>
-        <div class="lp-num" id="lp-num">Step 1 of 5</div>
-        <div class="lp-title" id="lp-title">Choose your<br><em>language</em></div>
-        <div class="lp-sub" id="lp-sub">Select the language you want Figure to use across your experience.</div>
+  <!-- SCREEN 1: Landing -->
+  <section class="s1" id="screen1">
+    <div class="s1__inner">
+      <div class="s1__top">
+        <span class="s1__from">from two crews &mdash; 2026</span>
       </div>
-      <div class="lp-bot">
-        <div class="s-track" id="s-track"></div>
+
+      <div class="s1__center">
+        <p class="s1__pre">happy birthday</p>
+        <h1 class="s1__name">Mrs.<br>Frieboth</h1>
+        <p class="s1__sub">We made something for you.</p>
+      </div>
+
+      <div class="s1__bottom">
+        <button class="s1__btn" id="enter-btn" type="button">
+          <span>Watch the reels</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 2v11M3 9l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <p class="s1__hint">turn your sound on</p>
       </div>
     </div>
+  </section>
 
-    <div id="rp">
+  <!-- SCREEN 2: Reels -->
+  <section class="s2" id="screen2" aria-hidden="true">
+    <div class="s2__layout">
 
-      <div class="rp-pane on" id="p1">
-        <div class="opt-list">
-          <div class="opt sel" tabindex="0" data-val="en" onclick="pick(this,'lang')"><div class="opt-em">🇺🇸</div><div class="opt-body"><div class="opt-label">English</div></div><div class="opt-chk"></div></div>
-          <div class="opt" tabindex="0" data-val="es" onclick="pick(this,'lang')"><div class="opt-em">🇪🇸</div><div class="opt-body"><div class="opt-label">Español</div></div><div class="opt-chk"></div></div>
-          <div class="opt" tabindex="0" data-val="fr" onclick="pick(this,'lang')"><div class="opt-em">🇫🇷</div><div class="opt-body"><div class="opt-label">Français</div></div><div class="opt-chk"></div></div>
-          <div class="opt" tabindex="0" data-val="de" onclick="pick(this,'lang')"><div class="opt-em">🇩🇪</div><div class="opt-body"><div class="opt-label">Deutsch</div></div><div class="opt-chk"></div></div>
-          <div class="opt" tabindex="0" data-val="pt" onclick="pick(this,'lang')"><div class="opt-em">🇧🇷</div><div class="opt-body"><div class="opt-label">Português</div></div><div class="opt-chk"></div></div>
-        </div>
-        <div class="btn-row"><button class="s-btn s-btn-p" onclick="go(2)">Continue →</button></div>
-      </div>
+      <!-- Left: video player -->
+      <div class="s2__player">
+        <div class="screen" id="screen" data-state="idle">
+          <video class="screen__main" id="video-main" playsinline preload="metadata"></video>
 
-      <div class="rp-pane" id="p2">
-        <div class="qr-card">
-          <div class="qr-img"><div class="qr-px"></div></div>
-          <div class="qr-info">
-            <h3>Scan to sign in</h3>
-            <p>Open Figure on your phone and scan this code to sign in or create your account.</p>
-            <span class="qr-url">figure.app/connect</span>
+          <button class="screen__big" id="big-play" type="button" aria-label="Play">
+            <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+              <path d="M6 4.5v15l13-7.5-13-7.5z" fill="currentColor"/>
+            </svg>
+          </button>
+
+          <div class="screen__msg" id="screen-msg" role="status">
+            <p>Video not found.</p>
+          </div>
+
+          <div class="screen__caption">
+            <span class="screen__tag" id="reel-group"></span>
+            <strong id="reel-name"></strong>
+          </div>
+
+          <div class="controls" id="controls">
+            <button class="ctl" id="ctl-play" type="button" aria-label="Play">
+              <svg class="i-play" viewBox="0 0 24 24" width="18" height="18"><path d="M7 4.5v15l13-7.5-13-7.5z" fill="currentColor"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z" fill="currentColor"/></svg>
+            </button>
+            <span class="time" id="time-cur">0:00</span>
+            <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek">
+            <span class="time" id="time-dur">0:00</span>
+            <button class="ctl" id="ctl-mute" type="button" aria-label="Mute">
+              <svg class="i-vol" viewBox="0 0 24 24" width="18" height="18"><path d="M4 9.5v5h4l5 4v-13l-5 4H4z" fill="currentColor"/><path d="M16 8.5c1.6 1.2 1.6 5.8 0 7M18.5 6c3 2.6 3 9.4 0 12" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+              <svg class="i-mute" viewBox="0 0 24 24" width="18" height="18"><path d="M4 9.5v5h4l5 4v-13l-5 4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+            <button class="ctl" id="ctl-full" type="button" aria-label="Fullscreen">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="square"/></svg>
+            </button>
+            <button class="ctl ctl--music" id="ctl-music" type="button" aria-label="Toggle music">
+              <svg class="i-music-on" viewBox="0 0 24 24" width="18" height="18"><path d="M9 18V6l12-2v12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg>
+              <svg class="i-music-off" viewBox="0 0 24 24" width="18" height="18"><path d="M9 18V6l12-2v12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-dasharray="4 2"/><circle cx="6" cy="18" r="3" fill="currentColor" opacity=".4"/><circle cx="18" cy="16" r="3" fill="currentColor" opacity=".4"/></svg>
+            </button>
           </div>
         </div>
-        <p class="qr-note">Double-press Enter or tap Skip to continue without signing in. You can always do this from Settings.</p>
-        <div class="btn-row">
-          <button class="s-btn s-btn-g" onclick="go(3)">Skip</button>
-          <button class="s-btn s-btn-p" onclick="go(3)">I've signed in →</button>
-        </div>
       </div>
 
-      <div class="rp-pane" id="p3">
-        <div class="opt-list">
-            <div class="opt" style="cursor:default;">
-                <div class="opt-em">🏷️</div>
-                <div class="opt-body">
-                    <input class="gt-field" type="text" id="gt" placeholder="Your Gamertag" maxlength="16" oninput="gtCheck(this)" autocomplete="off" spellcheck="false">
-                </div>
-            </div>
+      <!-- Right: queue + header -->
+      <div class="s2__side">
+        <div class="s2__header">
+          <button class="s2__back" id="back-btn" type="button" aria-label="Back">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div>
+            <p class="s2__title">Mrs. Frieboth</p>
+            <p class="s2__status" id="reel-status">0 of 4 watched</p>
+          </div>
+          <div class="s2__candles" id="reel-candles"></div>
         </div>
-        <p class="gt-hint" id="gt-hint">3–16 characters · Letters, numbers, hyphens</p>
-        <div class="av-grid">
-          <div class="av sel" tabindex="0" data-av="🦝" onclick="pickAv(this)">🦝</div>
-          <div class="av" tabindex="0" data-av="🎮" onclick="pickAv(this)">🎮</div>
-          <div class="av" tabindex="0" data-av="🌙" onclick="pickAv(this)">🌙</div>
-          <div class="av" tabindex="0" data-av="⚡" onclick="pickAv(this)">⚡</div>
-          <div class="av" tabindex="0" data-av="🔥" onclick="pickAv(this)">🔥</div>
-          <div class="av" tabindex="0" data-av="👾" onclick="pickAv(this)">👾</div>
-          <div class="av" tabindex="0" data-av="🐺" onclick="pickAv(this)">🐺</div>
-          <div class="av" tabindex="0" data-av="🦊" onclick="pickAv(this)">🦊</div>
-          <div class="av" tabindex="0" data-av="🐉" onclick="pickAv(this)">🐉</div>
-          <div class="av" tabindex="0" data-av="💀" onclick="pickAv(this)">💀</div>
-        </div>
-        <div class="btn-row">
-          <button class="s-btn s-btn-g" onclick="go(2)">← Back</button>
-          <button class="s-btn s-btn-p" id="gt-next" onclick="go(4)" disabled>Continue →</button>
-        </div>
-      </div>
 
-      <div class="rp-pane" id="p4">
-        <div class="opt-list">
-          <div class="opt sel" tabindex="0" data-val="mouse" onclick="pick(this,'input')"><div class="opt-em">🖱️</div><div class="opt-body"><div class="opt-label">Mouse & Keyboard</div><div class="opt-desc">PC-style layout with cursor navigation</div></div><div class="opt-chk"></div></div>
-          <div class="opt" tabindex="0" data-val="controller" onclick="pick(this,'input')"><div class="opt-em">🎮</div><div class="opt-body"><div class="opt-label">Controller</div><div class="opt-desc">Xbox-style layout, D-pad navigation</div></div><div class="opt-chk"></div></div>
-          <div class="opt" tabindex="0" data-val="auto" onclick="pick(this,'input')"><div class="opt-em">✦</div><div class="opt-body"><div class="opt-label">Auto-detect</div><div class="opt-desc">Switches automatically based on input</div></div><div class="opt-chk"></div></div>
-        </div>
-        <div class="btn-row">
-          <button class="s-btn s-btn-g" onclick="go(3)">← Back</button>
-          <button class="s-btn s-btn-p" onclick="go(5)">Continue →</button>
-        </div>
-      </div>
+        <div class="s2__queue" id="queue"></div>
 
-      <div class="rp-pane" id="p5">
-        <div class="th-grid">
-          <div class="th sel" id="th-dark" tabindex="0" data-val="dark" onclick="pickTh(this)"><div class="th-nm">Dark</div></div>
-          <div class="th" id="th-mid" tabindex="0" data-val="midnight" onclick="pickTh(this)"><div class="th-nm">Midnight</div></div>
-          <div class="th" id="th-carb" tabindex="0" data-val="carbon" onclick="pickTh(this)"><div class="th-nm">Carbon</div></div>
-          <div class="th" id="th-for" tabindex="0" data-val="forest" onclick="pickTh(this)"><div class="th-nm">Forest</div></div>
-        </div>
-        <div class="btn-row">
-          <button class="s-btn s-btn-g" onclick="go(4)">← Back</button>
-          <button class="s-btn s-btn-p" onclick="finish()">Let's go →</button>
-        </div>
+        <div class="s2__wish" id="wish" aria-live="polite"></div>
       </div>
 
     </div>
-  </div>
-</div>
+  </section>
 
-<div id="wb">
-  <div class="wb-av" id="wb-av">🦝</div>
-  <div>
-    <div class="wb-gr">Welcome back,</div>
-    <div class="wb-nm" id="wb-nm">Player</div>
-  </div>
-</div>
-
-<div id="main-app">
-  <div class="container">
-    <h1>Xbox</h1>
-    <h2>Style Showcase</h2>
-    <h3>Typography</h3>
-    <h4>Heading 4</h4>
-    <h5>Heading 5</h5>
-    <h6>Heading 6</h6>
-    <p>Lorem ipsum dolor sit amet, <strong>consectetur adipiscing elit</strong>. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-    <p class="text-secondary">Secondary text color</p>
-    <p class="text-muted">Muted text color</p>
-    <h3>Buttons</h3>
-    <button>Default Button</button>
-    <button class="primary">Primary Button</button>
-    <h3>Inputs</h3>
-    <input type="text" placeholder="Enter your gamertag">
-    <textarea placeholder="Share your thoughts..."></textarea>
-    <h3>Links</h3>
-    <p><a href="https://google.com/">Learn more about Xbox Game Pass</a></p>
-    <h3>Cards</h3>
-    <div class="card">
-      <h4>Game Library</h4>
-      <p>Access hundreds of games with Xbox Game Pass</p>
-      <button class="primary">Browse Games</button>
-    </div>
-  </div>
-</div>
-
-<script>
-const SK='figure_v3_setup';
-const S={step:1,lang:'en',input:'mouse',theme:'dark',gt:'',av:'🦝'};
-let lastEnter=0;
-const LP=[
-  {num:'Step 1 of 5',title:'Choose your<br><em>language</em>',sub:'Select the language you want Figure to use across your experience.'},
-  {num:'Step 2 of 5',title:'Sign in or<br><em>create account</em>',sub:'Link your Figure account to save your profile and progress across devices.'},
-  {num:'Step 3 of 5',title:'Your<br><em>Gamertag</em>',sub:'This is how you appear to friends and across Figure.'},
-  {num:'Step 4 of 5',title:'How will<br>you <em>play?</em>',sub:'Figure auto-detects your input, but this sets your default layout.'},
-  {num:'Step 5 of 5',title:'Pick your<br><em>theme</em>',sub:'Choose how Figure looks. Change it any time in Settings.'},
-];
-
-(function init(){
-  const saved=load();
-  document.getElementById('boot-layer').style.display='flex';
-  if(saved&&saved.complete){
-    playBoot(function(){
-      showWB(saved.gt||'Player',saved.av||'🦝');
-      setTimeout(()=>launchMain(),2500);
-    });
-  } else {
-    buildTrack();
-    playBoot(function(){
-      document.getElementById('setup-layer').style.display='block';
-      const app=document.getElementById('setup-app');
-      app.style.transition='opacity 0.45s ease';
-      requestAnimationFrame(()=>{ app.style.opacity='1'; });
-      document.getElementById('s-skip').style.display='block';
-      updateLP(1);
-    });
-  }
-})();
-
-function load(){try{return JSON.parse(localStorage.getItem(SK))}catch{return null}}
-function save(d){try{localStorage.setItem(SK,JSON.stringify(d))}catch{}}
-
-function playBoot(cb){
-  const logo=document.getElementById('boot-logo');
-  const glow=document.getElementById('boot-glow');
-  const tag=document.getElementById('boot-tag');
-  const bl=document.getElementById('boot-layer');
-
-  setTimeout(()=>{
-    logo.style.transition='opacity 0.65s ease,transform 0.65s cubic-bezier(0.16,1,0.3,1)';
-    logo.style.opacity='1';logo.style.transform='scale(1)';
-  },250);
-
-  setTimeout(()=>{
-    glow.style.transition='opacity 0.2s,width 1.3s cubic-bezier(0.16,1,0.3,1),height 1.3s cubic-bezier(0.16,1,0.3,1)';
-    glow.style.opacity='1';glow.style.width='550px';glow.style.height='550px';
-  },650);
-  setTimeout(()=>{
-    glow.style.transition='opacity 0.9s ease';glow.style.opacity='0';
-  },1500);
-
-  setTimeout(()=>{
-    tag.style.transition='color 0.75s ease';tag.style.color='rgba(255,255,255,0.38)';
-  },800);
-
-  setTimeout(()=>{
-    bl.style.transition='opacity 0.55s ease';bl.style.opacity='0';
-    setTimeout(()=>{ bl.style.display='none'; cb(); },550);
-  },2300);
-}
-
-function buildTrack(){
-  const el=document.getElementById('s-track');
-  for(let i=1;i<=5;i++){const d=document.createElement('div');d.className='st';d.id='st'+i;el.appendChild(d);}
-}
-
-function updateTrack(n){
-  for(let i=1;i<=5;i++){const d=document.getElementById('st'+i);if(d)d.className='st'+(i===n?' on':i<n?' done':'');}
-}
-
-function updateLP(n){
-  const c=LP[n-1];
-  document.getElementById('lp-num').textContent=c.num;
-  document.getElementById('lp-title').innerHTML=c.title;
-  document.getElementById('lp-sub').textContent=c.sub;
-  updateTrack(n);
-}
-
-function go(n){
-  document.querySelectorAll('.rp-pane').forEach(p=>p.classList.remove('on'));
-  const el=document.getElementById('p'+n);
-  if(el){el.style.animation='none';el.offsetHeight;el.style.animation='';el.classList.add('on');}
-  S.step=n;updateLP(n);
-}
-
-function pick(el,key){
-  el.closest('.opt-list').querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');S[key]=el.dataset.val;
-}
-function pickAv(el){document.querySelectorAll('.av').forEach(a=>a.classList.remove('sel'));el.classList.add('sel');S.av=el.dataset.av;}
-function pickTh(el){document.querySelectorAll('.th').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');S.theme=el.dataset.val;}
-
-function gtCheck(input){
-  const v=input.value.trim();
-  const hint=document.getElementById('gt-hint');
-  const btn=document.getElementById('gt-next');
-  const ok=/^[a-zA-Z0-9\-]{3,16}$/.test(v);
-  S.gt=v;
-  if(!v){hint.textContent='3–16 characters · Letters, numbers, hyphens';hint.className='gt-hint';}
-  else if(ok){hint.textContent='✓ Looks good';hint.className='gt-hint ok';}
-  else{hint.textContent=v.length<3?'Too short — need at least 3 characters':v.length>16?'Max 16 characters':'Only letters, numbers, and hyphens';hint.className='gt-hint err';}
-  btn.disabled=!ok;
-}
-
-function finish(){
-  const d={complete:true,gt:S.gt||'Player',av:S.av,lang:S.lang,input:S.input,theme:S.theme};
-  save(d);
-  const app=document.getElementById('setup-app');
-  app.style.transition='opacity 0.3s ease';app.style.opacity='0';
-  document.getElementById('s-skip').style.display='none';
-  setTimeout(()=>{
-    document.getElementById('setup-layer').style.display='none';
-    showWB(d.gt,d.av);
-    setTimeout(()=>launchMain(),2400);
-  },300);
-}
-
-function skipSetup(){
-  save({complete:true,gt:'Player',av:'🦝',skipped:true});
-  document.getElementById('setup-layer').style.display='none';
-  document.getElementById('s-skip').style.display='none';
-  launchMain();
-}
-
-function showWB(name,av){
-  document.getElementById('wb-nm').textContent=name;
-  document.getElementById('wb-av').textContent=av;
-  setTimeout(()=>document.getElementById('wb').classList.add('show'),80);
-}
-
-function launchMain(){
-  document.getElementById('wb').classList.remove('show');
-  const main=document.getElementById('main-app');
-  main.style.display='block';
-  main.style.opacity='0';
-  main.style.transition='opacity 0.4s ease';
-  requestAnimationFrame(()=>{ main.style.opacity='1'; });
-  initGamepad();
-}
-
-function initGamepad(){
-  let animId=null,focusEls=[],focusIdx=0;
-  let lastDpad={up:false,down:false,left:false,right:false},lastA={a:false};
-  let holdT={up:0,down:0,left:0,right:0};
-  const INIT=500,REP=150;
-
-  function getEls(){return Array.from(document.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')).filter(e=>!e.disabled&&e.offsetParent!==null)}
-  function upd(){focusEls=getEls();if(focusEls.length>0){focusIdx=Math.max(0,Math.min(focusIdx,focusEls.length-1));focusEls[focusIdx].focus();}}
-
-  function poll(){
-    const gp=navigator.getGamepads()[0];
-    if(gp){
-      const lx=gp.axes[0],ly=gp.axes[1];
-      const up=gp.buttons[12]?.pressed||ly<-0.5;
-      const dn=gp.buttons[13]?.pressed||ly>0.5;
-      const lt=gp.buttons[14]?.pressed||lx<-0.5;
-      const rt=gp.buttons[15]?.pressed||lx>0.5;
-      const a=gp.buttons[0]?.pressed||false;
-
-      function nav(dir,delta){
-        if(dir){
-          if(!lastDpad[delta<0?'up':'down']){
-            focusEls=getEls();if(focusEls.length>0){focusIdx=(focusIdx+delta+focusEls.length)%focusEls.length;upd();}
-            lastDpad[delta<0?'up':'down']=true;holdT[delta<0?'up':'down']=Date.now();
-          } else {
-            const e=Date.now()-holdT[delta<0?'up':'down'];
-            if(e>INIT&&e%REP<16){focusEls=getEls();if(focusEls.length>0){focusIdx=(focusIdx+delta+focusEls.length)%focusEls.length;upd();}}
-          }
-        } else lastDpad[delta<0?'up':'down']=false;
-      }
-      nav(up,-1);nav(dn,1);
-      if(lt){if(!lastDpad.left){focusEls=getEls();focusIdx=(focusIdx-1+focusEls.length)%focusEls.length;upd();lastDpad.left=true;holdT.left=Date.now();}else{const e=Date.now()-holdT.left;if(e>INIT&&e%REP<16){focusEls=getEls();focusIdx=(focusIdx-1+focusEls.length)%focusEls.length;upd();}}}else lastDpad.left=false;
-      if(rt){if(!lastDpad.right){focusEls=getEls();focusIdx=(focusIdx+1)%focusEls.length;upd();lastDpad.right=true;holdT.right=Date.now();}else{const e=Date.now()-holdT.right;if(e>INIT&&e%REP<16){focusEls=getEls();focusIdx=(focusIdx+1)%focusEls.length;upd();}}}else lastDpad.right=false;
-      if(a&&!lastA.a){const f=document.activeElement;if(f)f.click();lastA.a=true;}else if(!a)lastA.a=false;
-    }
-    animId=requestAnimationFrame(poll);
-  }
-
-  window.addEventListener('gamepadconnected',e=>{if(!animId){focusEls=getEls();if(focusEls.length>0){focusIdx=0;upd();}poll();}});
-  window.addEventListener('gamepaddisconnected',()=>{if(animId){cancelAnimationFrame(animId);animId=null;}});
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&S.step===2){const now=Date.now();if(now-lastEnter<500)go(3);lastEnter=now;}
-});
-</script>
 </body>
 </html>
