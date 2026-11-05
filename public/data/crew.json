@@ -11,25 +11,36 @@
       "name": "Crew Member 1",
       "group": "current",
       "note": "",
+      "type": "video",
       "sources": ["videos/IMG_2448.mp4"]
     },
     {
       "name": "Crew Member 2",
       "group": "last",
       "note": "",
+      "type": "video",
       "sources": ["videos/IMG_5350.mp4"]
     },
     {
       "name": "Crew Member 3",
       "group": "current",
       "note": "",
+      "type": "video",
       "sources": ["videos/VID_20261104_193157.mp4"]
     },
     {
       "name": "Crew Member 4",
       "group": "last",
       "note": "",
+      "type": "video",
       "sources": ["videos/IMG_5840.mp4"]
+    },
+    {
+      "name": "Crew Member 5",
+      "group": "current",
+      "note": "",
+      "type": "audio",
+      "sources": ["assets/Birthday.mp3"]
     }
   ]
 }
