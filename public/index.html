@@ -6,24 +6,20 @@
   <title>Happy Birthday Mrs. Frieboth</title>
   <meta name="theme-color" content="#0e0609">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
-
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/screen1.css">
   <link rel="stylesheet" href="css/screen2.css">
   <link rel="stylesheet" href="css/player.css">
-
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
 
   <canvas id="embers" aria-hidden="true"></canvas>
 
-  <!-- SCREEN 1 -->
   <section class="s1" id="screen1">
     <div class="s1__inner">
       <div class="s1__top">
@@ -46,20 +42,16 @@
     </div>
   </section>
 
-  <!-- SCREEN 2 -->
   <section class="s2" id="screen2" aria-hidden="true">
     <div class="s2__layout">
 
-      <!-- Left: player area -->
       <div class="s2__player" id="player-area">
 
-        <!-- Candle lock screen (shown until a candle is clicked) -->
         <div class="candle-stage" id="candle-stage">
-          <p class="candle-stage__hint">click a candle to unlock a reel</p>
-          <div class="candle-row" id="candle-row"></div>
+          <p class="candle-stage__hint">pick a candle</p>
+          <div id="candle-groups"></div>
         </div>
 
-        <!-- Video player (hidden until a video reel is selected) -->
         <div class="screen" id="screen" data-state="idle" style="display:none">
           <video class="screen__main" id="video-main" playsinline preload="metadata"></video>
           <button class="screen__big" id="big-play" type="button" aria-label="Play">
@@ -90,9 +82,12 @@
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="square"/></svg>
             </button>
           </div>
+          <button class="player-next-btn" id="video-next-btn" style="display:none" type="button">
+            Next
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
 
-        <!-- Audio player (hidden until an audio reel is selected) -->
         <div class="audio-player" id="audio-player" style="display:none">
           <div class="audio-player__inner">
             <div class="audio-player__label">
@@ -115,12 +110,15 @@
                 <svg class="i-mute" viewBox="0 0 24 24" width="18" height="18"><path d="M4 9.5v5h4l5 4v-13l-5 4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
               </button>
             </div>
+            <button class="player-next-btn" id="audio-next-btn" style="display:none" type="button">
+              Next
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
         </div>
 
       </div>
 
-      <!-- Right: sidebar -->
       <div class="s2__side">
         <div class="s2__header">
           <button class="s2__back" id="back-btn" type="button" aria-label="Back">
@@ -128,7 +126,7 @@
           </button>
           <div>
             <p class="s2__title">Mrs. Frieboth</p>
-            <p class="s2__status" id="reel-status">0 of 5 lit</p>
+            <p class="s2__status" id="reel-status">0 of 6 lit</p>
           </div>
           <div class="s2__candles" id="reel-candles"></div>
         </div>
