@@ -4,20 +4,20 @@
   "message": "Thank you for showing up for us every single day. This one is for you. Happy birthday, Mrs. Frieboth.",
   "groups": [
     { "id": "current", "label": "This year's crew" },
-    { "id": "last", "label": "Last crew" }
+    { "id": "last", "label": "Last year's crew" }
   ],
   "reels": [
     {
       "name": "Crew Member 1",
       "group": "current",
       "note": "",
-      "sources": ["videos/IMG_2448.mp4", "videos/IMG_2448.mov"]
+      "sources": ["videos/IMG_2448.mp4"]
     },
     {
       "name": "Crew Member 2",
-      "group": "current",
+      "group": "last",
       "note": "",
-      "sources": ["videos/IMG_5350.mp4", "videos/IMG_5350.mov"]
+      "sources": ["videos/IMG_5350.mp4"]
     },
     {
       "name": "Crew Member 3",
@@ -29,7 +29,7 @@
       "name": "Crew Member 4",
       "group": "last",
       "note": "",
-      "sources": ["videos/IMG_5840.mp4", "videos/IMG_5840.mov"]
+      "sources": ["videos/IMG_5840.mp4"]
     }
   ]
 }
